@@ -1,0 +1,20 @@
+# Byte-compiled / virtual environment files
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# MacOS / system
+.DS_Store
+
+# Logs
+logs/
