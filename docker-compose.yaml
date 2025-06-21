@@ -16,7 +16,7 @@ services:
     environment:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__FERNET_KEY: 'a_secure_fernet_key'
+      AIRFLOW__CORE__FERNET_KEY: 'Y3tWOtv5iIohJBBgekNwPIIvNiwxSa015Lb3agVAD6A='
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
     volumes:
       - ./dags:/opt/airflow/dags
@@ -24,7 +24,7 @@ services:
       - ./transform:/opt/airflow/transform
       - ./.env:/opt/airflow/.env
     ports:
-      - "8080:8080"
+      - "8088:8080"
     command: webserver
 
   airflow-scheduler:

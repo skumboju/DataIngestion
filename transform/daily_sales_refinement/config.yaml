@@ -1,0 +1,3 @@
+database: DEMO_DB
+schema: RAW
+schedule: "@daily"
