@@ -1,3 +1,5 @@
-database: DEMO_DB
-schema: RAW
-schedule: "@daily"
+schedule: '0 2 * * *'
+dependencies:
+  - after: clean_sales
+    before: notify
+    

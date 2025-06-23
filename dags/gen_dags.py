@@ -1,15 +1,10 @@
-# dags/dag_builder.py
 
 import os
 from datetime import datetime
+from airflow import DAG
+from airflow.operators.dummy import DummyOperator
+from ingestion.core.config_loader import load_config_for_dag
 
-try:
-    from airflow import DAG
-    from airflow.operators.python import PythonOperator
-    from ingestion.transformers.sql_executor import execute_sql_with_jinja
-    from ingestion.core.config_loader import load_config_for_dag
-except ModuleNotFoundError:
-    DAG = None
 
 TRANSFORM_ROOT = "/opt/airflow/transform"
 DEFAULT_ARGS = {
@@ -22,12 +17,14 @@ def discover_sql_dags():
     if DAG is None:
         return []
 
+    print("🚀 Starting DAG discovery...")
     dags = []
     for dag_folder in os.listdir(TRANSFORM_ROOT):
         dag_path = os.path.join(TRANSFORM_ROOT, dag_folder)
         if not os.path.isdir(dag_path):
             continue
 
+        print(f"✅ Found DAG folder: {dag_folder}")
         config = load_config_for_dag(dag_path) if load_config_for_dag else {}
         dependencies = config.get("dependencies", [])
         dag_id = dag_folder
@@ -42,6 +39,7 @@ def discover_sql_dags():
             f for f in os.listdir(dag_path)
             if f.endswith('.sql')
         ])
+        print(f"🧩 SQL Files in {dag_folder}: {sql_files}")
 
         tasks = {}
 
@@ -49,10 +47,8 @@ def discover_sql_dags():
             task_id = sql_file.replace('.sql', '')
             file_path = os.path.join(dag_path, sql_file)
 
-            task = PythonOperator(
+            task = DummyOperator(
                 task_id=task_id,
-                python_callable=execute_sql_with_jinja,
-                op_kwargs={"file_path": file_path, **config},
                 dag=dag
             )
 
@@ -64,10 +60,19 @@ def discover_sql_dags():
             if after in tasks and before in tasks:
                 tasks[after] >> tasks[before]
 
-        globals()[dag_id] = dag
         dags.append(dag)
+        print(f"🔁 Registered DAG: {dag_id} with {len(tasks)} tasks")
 
+    print(f"✅ Total DAGs registered: {len(dags)}")
     return dags
 
 if DAG:
-    discover_sql_dags()
+    print("👀 DAG registration starting...")
+
+    discovered = discover_sql_dags()
+
+    print(f"📦 Discovered {len(discovered)} DAGs")
+    for dag in discovered:
+        print(f"📌 Registering DAG: {dag.dag_id}")
+        globals()[dag.dag_id] = dag
+
